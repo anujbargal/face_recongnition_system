@@ -1,0 +1,148 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition Attendance System</title>
+    <style>
+        /* Basic styling for the attendance system page */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .video-container {
+            margin: 20px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #videoFeed {
+            width: 100%;
+            height: auto;
+        }
+
+        .status {
+            font-size: 18px;
+            color: #555;
+            margin-top: 20px;
+        }
+
+        .attendance-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 20px 0;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .attendance-button:hover {
+            background-color: #45a049;
+        }
+
+        .attendance-log {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .attendance-log h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        #attendanceList {
+            list-style: none;
+            padding: 0;
+        }
+
+        #attendanceList li {
+            background-color: #f1f1f1;
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Face Recognition Attendance System</h1>
+
+        <!-- Video feed from the face recognition system -->
+        <div class="video-container">
+            <img id="videoFeed" src="http://localhost:5000/video_feed" alt="Video Feed">
+        </div>
+
+        <!-- Attendance Status -->
+        <div id="status" class="status">
+            Please look at the camera to mark your attendance.
+        </div>
+
+        <!-- Button to mark attendance -->
+        <button onclick="markAttendance()" class="attendance-button">Mark Attendance</button>
+
+        <!-- Attendance log area -->
+        <div class="attendance-log">
+            <h2>Attendance Log</h2>
+            <ul id="attendanceList"></ul>
+        </div>
+    </div>
+
+    <script>
+        // Function to mark attendance
+        function markAttendance() {
+            fetch('http://localhost:5000/recognize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                const status = document.getElementById("status");
+                const attendanceList = document.getElementById("attendanceList");
+
+                if (data.recognized) {
+                    const personName = data.person_name;
+                    const confidence = data.confidence;
+                    status.innerHTML = `Attendance marked for ${personName} with confidence ${confidence}.`;
+                    addAttendanceLog(personName);
+                } else {
+                    status.innerHTML = "Face not recognized. Please try again.";
+                }
+            })
+            .catch(error => {
+                console.error("Error marking attendance:", error);
+                const status = document.getElementById("status");
+                status.innerHTML = "An error occurred while marking attendance.";
+            });
+        }
+
+        // Function to add a person's name to the attendance log
+        function addAttendanceLog(personName) {
+            const attendanceList = document.getElementById("attendanceList");
+            const listItem = document.createElement("li");
+            listItem.innerText = `Attendance marked for: ${personName}`;
+            attendanceList.appendChild(listItem);
+        }
+    </script>
+</body>
+</html>
